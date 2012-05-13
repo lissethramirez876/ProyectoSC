@@ -36,9 +36,6 @@ root_state=`whoami`
 # Lista de paquetes estandar.
 paquetes="g++ gcc-4.3 g++-4.3 x-dev libx11-dev libxmu-dev x11proto-core-dev xorg-dev xgraph"
 
-
-#multimedia="alsa alsa-base listen gxine istanbul w32codecs mplayer xine-ui"
-
 # Variable: checkuser
 #
 # Si su valor es 0 se hara seleccion de usuario si no se supondra que ya se ha elegida
@@ -116,8 +113,86 @@ instalar(){
 	get_user
 	echo "------------------  Instalando Paquetes NS 2 y TCPLAB -----------------------"
 	sleep 3
+	mkdir /home/$user/simulador/
+	cd /home/$user/simulador/
+	wget http://sourceforge.net/projects/nsnam/files/allinone/ns-allinone-2.34/ns-allinone-2.34.tar.gz/download
+#descomprimir el archivo en un directorio
+	tar xzvf ns-allinone-2.34.tar.gz
+	
+	#cambiar la variable de entorno de CC
+#CC=gcc-4.3
+
+#instalar el paquete
+	cd ns-allinone-2.34
+	./install 
+
+	echo PATH=$PATH:/home/$user/simulador/ns-allinone-2.34/ns-2.34 >> /etc/bash_completion
+	echo export NS=/home/$user/simulador/ns-allinone-2.34/ns-2.34  >> /etc/bash_completion
+	echo export TCPLAB=/home/$user/simulador/tcp-lab/trunk/includes/tcl >> /etc/bash_completion
+	echo export TCPLABRPI=/home/$user/simulador/tcp-lab/trunk/rpi/rpi-tcl >> /etc/bash_completion
+	echo export NSVER=2.34 >> /etc/bash_completion
+	
+	
+###########################TCPLAB#######################
+
+	mv tcp-lab /home/$user/simulador/
+	cd /home/$user/simulador/tcp-lab/
+#COPIAR ARCHIVOS/DIRECTORIOS
+	cp -r tcp-lab/trunk/rpi ns-allinone-2.34/ns2.34/rpi
+	cp -r tcp-lab/trunk/rpi/rpi-tcl ns-allinone-2.34/ns2.34/tcl/rpi
+	cp -r ns-allinone-2.34/ns2.34/rpi/rpi-c++/* ns-allinone-2.34/ns2.34/rpi
+	
+#RESPALDO de archivos originales
+	cd /home/$user/simulador/ns-allinone-2.34/ns-2.34/tcp
+	mv tcp.cc tcp.cc-backup
+	mv tcp.h tcp.h-backup
+	mv tcp-full.cc tcp-full.cc-backup
+	mv tcp-full.h tcp-full.h-backup
+	
+	cd /home/$user/simulador/ns-allinone-2.34/ns-2.34/tcl/lib
+	mv ns-default.tcl ns-default.tcl-backup
+	mv ns-queue.tcl ns-queue.tcl-backup
+	
+	cd /home/$user/simulador/ns-allinone-2.34/tclcl-1.19
+	mv tracedvar.h tracedvar.h-backup
+	mv tracedvar.cc tracedvar.cc-backup
+	
+#ENLACE SIMBOLICOS
+ln -s /home/$user/simulador/tcp-lab/trunk/tcp/my-tcp-full-2.34/tcp.h /home/$user/simulador/ns-allinone-2.34/ns-2.34/tcp/tcp.h
+ln -s /home/$user/simulador/tcp-lab/trunk/tcp/my-tcp-full-2.34/tcp.cc /home/$user/simulador/ns-allinone-2.34/ns-2.34/tcp/tcp.cc
+ln -s /home/$user/simulador/tcp-lab/trunk/tcp/my-tcp-full-2.34/tcp-full.cc /home/$user/simulador/ns-allinone-2.34/ns-2.34/tcp/tcp-full.cc
+ln -s /home/$user/simulador/tcp-lab/trunk/tcp/my-tcp-full-2.34/tcp-full.h /home/$user/simulador/ns-allinone-2.34/ns-2.34/tcp/tcp-full.h
+ln -s /home/$user/simulador/tcp-lab/trunk/tcp/my-tcp-full-2.34/tcp-full-newreno.cc /home/$user/simulador/ns-allinone-2.34/ns-2.34/tcp/tcp-full-newreno.cc
+ln -s /home/$user/simulador/tcp-lab/trunk/rpi/redefine-ns2/ns-default.tcl-2.34 /home/$user/simulador/ns-allinone-2.34/ns-2.34/tcl/lib/ns-default.tcl
+ln -s /home/$user/simulador/tcp-lab/trunk/rpi/redefine-ns2/ns-queue.tcl-2.34 /home/$user/simulador/ns-allinone-2.34/ns-2.34/tcl/lib/ns-queue.tcl
+ln -s /home/$user/simulador/tcp-lab/trunk/tclcl-1.19/tracedvar.h /home/$user/simulador/ns-allinone-2.34/tclcl-1.19/tracedvar.h
+ln -s /home/$user/simulador/tcp-lab/trunk/tclcl-1.19/tracedvar.cc /home/$user/simulador/ns-allinone-2.34/tclcl-1.19/tracedvar.cc
+	
+#MODIFICAR MAKEFILE de ns2.34 (el archivo ns2.34/makefile.in )
+
+cd /home/$user/simulador/ns-allinone-2.34/ns-2.34/
+find Makefile.in | xargs perl -pi -e ‘s/tcp/tcp-vegas.o tcp/tcp-rbp.o tcp/tcp-full.o tcp/rq.o \ /tcp/tcp-vegas.o tcp/tcp-rbp.o tcp/tcp-full.o tcp/rq.o tcp-full-newreno.o \ rpi/byte-counter.o rpi/delay-monitor.o rpi/file-tools.o \ rpi/rate-monitor.o rpi/rpi-flowmon.o rpi/rpi-queue-monitor.o \ /g’
+
+#agregar en la subseccion
+find Makefile.in | xargs perl -pi -e ‘s/-I./diffusion3/filter_core -I./asim/ -I./qs \ /-I./diffusion3/filter_core -I./asim/ -I./qs \
+-I./rpi\ /g’
+
+#RECONSTRUIR el TCLCL
+	cd /home/$user/simulador/ns-allinone-2.34/tclcl-1.19
+	./configure --disable-static CC=gcc-4.3 CXX=g++-4.3
+	make
+	
+#RECONSTRUIR el NS2.34
+	cd /home/$user/simulador/ns-allinone-2.34/ns2.34
+	./configure --disable-static CC=gcc-4.3 CXX=g++-4.3
+	make
+
+	
+	
 	test_command $? "Problemas al instalar los paquetes NS 2 y TCPLAB."
 	echo "---------- Se han instalado los paquetes NS 2 y TCPLAB----------"
+	echo "comprobación de la instalación  (%) "
+	./ns
 	
 }
 
