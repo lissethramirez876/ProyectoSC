@@ -34,7 +34,7 @@ root_state=`whoami`
 # Variable: paquetes
 #
 # Lista de paquetes estandar.
-paquetes="g++ gcc-4.3 g++-4.3 x-dev libx11-dev libxmu-dev x11proto-core-dev xorg-dev xgraph"
+paquetes="g++ gcc-4.3 g++-4.3 libx11-dev libxmu-dev x11proto-core-dev xorg-dev xgraph unrar build-essential autoconf automake"
 
 # Variable: checkuser
 #
@@ -112,38 +112,72 @@ verificar(){
 instalar(){
 	get_user
 	echo "------------------  Instalando Paquetes NS 2 y TCPLAB -----------------------"
+echo "el usuario es $user"
 	sleep 3
 	mkdir /home/$user/simulador/
 	cd /home/$user/simulador/
-	wget http://sourceforge.net/projects/nsnam/files/allinone/ns-allinone-2.34/ns-allinone-2.34.tar.gz/download
+	wget http://sourceforge.net/projects/nsnam/files/allinone/ns-allinone-2.34/ns-allinone-2.34.tar.gz
 #descomprimir el archivo en un directorio
-	tar xzvf ns-allinone-2.34.tar.gz
+	tar -xzvf ns-allinone-2.34.tar.gz
 	
-	#cambiar la variable de entorno de CC
-#CC=gcc-4.3
+	#buscando de SHLIB_LD="ld -shared" a SHLIB_LD="gcc -shared"
+cd /home/$user/simulador/ns-allinone-2.34/otcl-1.13/
+find /home/$user/simulador/ns-allinone-2.34/otcl-1.13/configure | xargs perl -pi -e 's/SHLIB_LD="ld -shared"/SHLIB_LD="gcc -shared"/g'
+echo "cambio variable"
+sleep 3
+find /home/$user/simulador/ns-allinone-2.34/nam-1.14/Makefile.in | xargs perl -pi -e 's/CC=@CC@/CC=gcc-4.3/g'
+echo "cambio variable"
+sleep 3
+find /home/$user/simulador/ns-allinone-2.34/ns-2.34/Makefile.in | xargs perl -pi -e 's/CC=@CC@/CC=gcc-4.3/g'
+echo "cambio variable"
+sleep 3
+find /home/$user/simulador/ns-allinone-2.34/otcl-1.13/Makefile.in | xargs perl -pi -e 's/CC=@CC@/CC=gcc-4.3/g'
+echo "cambio variable"
+sleep 3
+find /home/$user/simulador/ns-allinone-2.34/tclcl-1.19/Makefile.in | xargs perl -pi -e 's/CC=@CC@/CC=gcc-4.3/g'
+echo "cambio variable"
+sleep 3
+find /home/$user/simulador/ns-allinone-2.34/nam-1.14/Makefile.in | xargs perl -pi -e 's/CPP=@CXX@/CPP=g++-4.3/g'
+echo "cambio variable"
+sleep 3
+find /home/$user/simulador/ns-allinone-2.34/ns-2.34/Makefile.in | xargs perl -pi -e 's/CPP=@CXX@/CPP=g++-4.3/g'
+echo "cambio variable"
+sleep 3
+find /home/$user/simulador/ns-allinone-2.34/otcl-1.13/Makefile.in | xargs perl -pi -e 's/CPP=@CXX@/CPP=g++-4.3/g'
+echo "cambio variable"
+sleep 3
+find /home/$user/simulador/ns-allinone-2.34/tclcl-1.19/Makefile.in | xargs perl -pi -e 's/CPP=@CXX@/CPP=g++-4.3/g'
+echo "cambio variable"
+sleep 3
 
 #instalar el paquete
-	cd ns-allinone-2.34
+	cd /home/$user/simulador/ns-allinone-2.34
 	./install 
+echo "instalacion de ns terminada..........."
+sleep 5
 
-	echo PATH=$PATH:/home/$user/simulador/ns-allinone-2.34/ns-2.34 >> /etc/bash_completion
-	echo export NS=/home/$user/simulador/ns-allinone-2.34/ns-2.34  >> /etc/bash_completion
-	echo export TCPLAB=/home/$user/simulador/tcp-lab/trunk/includes/tcl >> /etc/bash_completion
-	echo export TCPLABRPI=/home/$user/simulador/tcp-lab/trunk/rpi/rpi-tcl >> /etc/bash_completion
-	echo export NSVER=2.34 >> /etc/bash_completion
+	#echo PATH=$PATH:/home/$user/simulador/ns-allinone-2.34/ns-2.34 >> /etc/bash_completion
+	#echo export NS=/home/$user/simulador/ns-allinone-2.34/ns-2.34  >> /etc/bash_completion
+	#echo export TCPLAB=/home/$user/simulador/tcp-lab/trunk/includes/tcl >> /etc/bash_completion
+	#echo export TCPLABRPI=/home/$user/simulador/tcp-lab/trunk/rpi/rpi-tcl >> /etc/bash_completion
+	#echo export NSVER=2.34 >> /etc/bash_completion
 	
-	
+	source /etc/bash_completion
 ###########################TCPLAB#######################
-
-	mv tcp-lab /home/$user/simulador/
-	cd /home/$user/simulador/tcp-lab/
+echo "empieza instalacion de tcplab"
+sleep 5
+	#mv tcp-lab /home/$user/simulador/
+	cd /home/$user/simulador/
 #COPIAR ARCHIVOS/DIRECTORIOS
-	cp -r tcp-lab/trunk/rpi ns-allinone-2.34/ns2.34/rpi
-	cp -r tcp-lab/trunk/rpi/rpi-tcl ns-allinone-2.34/ns2.34/tcl/rpi
-	cp -r ns-allinone-2.34/ns2.34/rpi/rpi-c++/* ns-allinone-2.34/ns2.34/rpi
+	cp -R tcp-lab/trunk/rpi ns-allinone-2.34/ns-2.34/rpi
+sleep 5
+	cp -R tcp-lab/trunk/rpi/rpi-tcl ns-allinone-2.34/ns-2.34/tcl/rpi
+sleep 5
+	cp -R ns-allinone-2.34/ns-2.34/rpi/rpi-c++/* ns-allinone-2.34/ns-2.34/rpi
 	
 #RESPALDO de archivos originales
 	cd /home/$user/simulador/ns-allinone-2.34/ns-2.34/tcp
+sleep 5
 	mv tcp.cc tcp.cc-backup
 	mv tcp.h tcp.h-backup
 	mv tcp-full.cc tcp-full.cc-backup
@@ -163,19 +197,20 @@ ln -s /home/$user/simulador/tcp-lab/trunk/tcp/my-tcp-full-2.34/tcp.cc /home/$use
 ln -s /home/$user/simulador/tcp-lab/trunk/tcp/my-tcp-full-2.34/tcp-full.cc /home/$user/simulador/ns-allinone-2.34/ns-2.34/tcp/tcp-full.cc
 ln -s /home/$user/simulador/tcp-lab/trunk/tcp/my-tcp-full-2.34/tcp-full.h /home/$user/simulador/ns-allinone-2.34/ns-2.34/tcp/tcp-full.h
 ln -s /home/$user/simulador/tcp-lab/trunk/tcp/my-tcp-full-2.34/tcp-full-newreno.cc /home/$user/simulador/ns-allinone-2.34/ns-2.34/tcp/tcp-full-newreno.cc
-ln -s /home/$user/simulador/tcp-lab/trunk/rpi/redefine-ns2/ns-default.tcl-2.34 /home/$user/simulador/ns-allinone-2.34/ns-2.34/tcl/lib/ns-default.tcl
-ln -s /home/$user/simulador/tcp-lab/trunk/rpi/redefine-ns2/ns-queue.tcl-2.34 /home/$user/simulador/ns-allinone-2.34/ns-2.34/tcl/lib/ns-queue.tcl
+ln -s /home/$user/simulador/tcp-lab/trunk/rpi/redefine-ns2/ns-default.tcl-2.33 /home/$user/simulador/ns-allinone-2.34/ns-2.34/tcl/lib/ns-default.tcl
+ln -s /home/$user/simulador/tcp-lab/trunk/rpi/redefine-ns2/ns-queue.tcl-2.33 /home/$user/simulador/ns-allinone-2.34/ns-2.34/tcl/lib/ns-queue.tcl
 ln -s /home/$user/simulador/tcp-lab/trunk/tclcl-1.19/tracedvar.h /home/$user/simulador/ns-allinone-2.34/tclcl-1.19/tracedvar.h
 ln -s /home/$user/simulador/tcp-lab/trunk/tclcl-1.19/tracedvar.cc /home/$user/simulador/ns-allinone-2.34/tclcl-1.19/tracedvar.cc
 	
 #MODIFICAR MAKEFILE de ns2.34 (el archivo ns2.34/makefile.in )
 
 cd /home/$user/simulador/ns-allinone-2.34/ns-2.34/
-find Makefile.in | xargs perl -pi -e ‘s/tcp/tcp-vegas.o tcp/tcp-rbp.o tcp/tcp-full.o tcp/rq.o \ /tcp/tcp-vegas.o tcp/tcp-rbp.o tcp/tcp-full.o tcp/rq.o tcp-full-newreno.o \ rpi/byte-counter.o rpi/delay-monitor.o rpi/file-tools.o \ rpi/rate-monitor.o rpi/rpi-flowmon.o rpi/rpi-queue-monitor.o \ /g’
+find Makefile.in | xargs perl -pi -e 's/tcp/tcp-vegas.o tcp/tcp-rbp.o tcp/tcp-full.o tcp/rq.o \ /tcp/tcp-vegas.o tcp/tcp-rbp.o tcp/tcp-full.o tcp/rq.o tcp-full-newreno.o \ rpi/byte-counter.o rpi/delay-monitor.o rpi/file-tools.o \ rpi/rate-monitor.o rpi/rpi-flowmon.o rpi/rpi-queue-monitor.o \/g'
 
 #agregar en la subseccion
-find Makefile.in | xargs perl -pi -e ‘s/-I./diffusion3/filter_core -I./asim/ -I./qs \ /-I./diffusion3/filter_core -I./asim/ -I./qs \
--I./rpi\ /g’
+find Makefile.in | xargs perl -pi -e 's/-I./diffusion3/lib/main -I./diffusion3/lib \/-I./diffusion3/filter_core -I./asim/ -I./qs \-I./rpi\/g'
+
+
 
 #RECONSTRUIR el TCLCL
 	cd /home/$user/simulador/ns-allinone-2.34/tclcl-1.19
@@ -215,11 +250,11 @@ Muestra la ayuda del programa.
 
 --verificar
 
-Verifica la existencia de los paquetes necesarios para el funcionamiento del simulador e instala los paquetes faltantes.
+1___Verifica la existencia de los paquetes necesarios para el funcionamiento del simulador e instala los paquetes faltantes.
 
 --instalar
 
-Instala el NS 2 y el TCPLAB
+2___Instala el NS 2 y el TCPLAB
 "
 }
 
