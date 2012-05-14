@@ -116,11 +116,14 @@ echo "el usuario es $user"
 	sleep 3
 	mkdir /home/$user/simulador/
 	cd /home/$user/simulador/
-	wget http://sourceforge.net/projects/nsnam/files/allinone/ns-allinone-2.34/ns-allinone-2.34.tar.gz
+	#wget http://sourceforge.net/projects/nsnam/files/allinone/ns-allinone-2.34/ns-allinone-2.34.tar.gz
 #descomprimir el archivo en un directorio
 	tar -xzvf ns-allinone-2.34.tar.gz
 	
-	#buscando de SHLIB_LD="ld -shared" a SHLIB_LD="gcc -shared"
+	#cambiar la variable de entorno de CC
+#echo export CC=gcc-4.3 >> /etc/bash_completion-I./diffusion3/lib/main -I./diffusion3/lib \
+
+#buscando de SHLIB_LD="ld -shared" a SHLIB_LD="gcc -shared"
 cd /home/$user/simulador/ns-allinone-2.34/otcl-1.13/
 find /home/$user/simulador/ns-allinone-2.34/otcl-1.13/configure | xargs perl -pi -e 's/SHLIB_LD="ld -shared"/SHLIB_LD="gcc -shared"/g'
 echo "cambio variable"
@@ -163,7 +166,7 @@ sleep 5
 	#echo export NSVER=2.34 >> /etc/bash_completion
 	
 	source /etc/bash_completion
-########################TCPLAB#######################
+###########################TCPLAB#######################
 echo "empieza instalacion de tcplab"
 sleep 5
 	#mv tcp-lab /home/$user/simulador/
@@ -203,32 +206,27 @@ ln -s /home/$user/simulador/tcp-lab/trunk/tclcl-1.19/tracedvar.h /home/$user/sim
 ln -s /home/$user/simulador/tcp-lab/trunk/tclcl-1.19/tracedvar.cc /home/$user/simulador/ns-allinone-2.34/tclcl-1.19/tracedvar.cc
 	
 #MODIFICAR MAKEFILE de ns2.34 (el archivo ns2.34/makefile.in )
-
 cd /home/$user/simulador/ns-allinone-2.34/ns-2.34/
-find Makefile.in | xargs perl -pi -e 's/tcp/tcp-vegas.o tcp/tcp-rbp.o tcp/tcp-full.o tcp/rq.o \ /tcp/tcp-vegas.o tcp/tcp-rbp.o tcp/tcp-full.o tcp/rq.o tcp-full-newreno.o \ rpi/byte-counter.o rpi/delay-monitor.o rpi/file-tools.o \ rpi/rate-monitor.o rpi/rpi-flowmon.o rpi/rpi-queue-monitor.o \/g'
-
-#agregar en la subseccion
-find Makefile.in | xargs perl -pi -e 's/-I./diffusion3/lib/main -I./diffusion3/lib \/-I./diffusion3/filter_core -I./asim/ -I./qs \-I./rpi\/g'
-
+mv Makefile.in Makefile.in-backup
+cd /home/$user/simulador/tcp-lab/
+mv Makefile.in /home/$user/simulador/ns-allinone-2.34/ns-2.34/
 
 
 #RECONSTRUIR el TCLCL
 	cd /home/$user/simulador/ns-allinone-2.34/tclcl-1.19
 	./configure --disable-static CC=gcc-4.3 CXX=g++-4.3
-	make
+	make install
 	
 #RECONSTRUIR el NS2.34
-	cd /home/$user/simulador/ns-allinone-2.34/ns2.34
+	cd /home/$user/simulador/ns-allinone-2.34/ns-2.34
 	./configure --disable-static CC=gcc-4.3 CXX=g++-4.3
-	make
+	make install
 
 	
 	
 	test_command $? "Problemas al instalar los paquetes NS 2 y TCPLAB."
 	echo "---------- Se han instalado los paquetes NS 2 y TCPLAB----------"
-	echo "comprobación de la instalación  (%) "
-	./ns
-	
+		
 }
 
 # Function: ayuda
