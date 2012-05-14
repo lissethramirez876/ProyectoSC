@@ -163,7 +163,7 @@ sleep 5
 	#echo export NSVER=2.34 >> /etc/bash_completion
 	
 	source /etc/bash_completion
-###########################TCPLAB#######################
+########################TCPLAB#######################
 echo "empieza instalacion de tcplab"
 sleep 5
 	#mv tcp-lab /home/$user/simulador/
