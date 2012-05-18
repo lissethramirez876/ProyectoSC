@@ -1,24 +1,15 @@
 #!/bin/bash
 
 # Title: NSscript
-
-#
 # SYNOPSIS:
-#
 # : NSscript {<options>...}
-
-#
 # DESCRIPTION:
 #
 # Este script instala el Simulador de Redes NS 2 y el TCPLAB
 #
-# 
-
-#
 # LICENSE: GPL
 # 
 #
-
 export PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 
 # Variable: user
@@ -34,8 +25,7 @@ root_state=`whoami`
 # Variable: paquetes
 #
 # Lista de paquetes estandar.
-paquetes="g++ gcc-4.3 g++-4.3 libx11-dev libxmu-dev x11proto-core-dev xorg-dev xgraph unrar build-essential autoconf automake libc6 libotcl1 tk8.4 gnuplot"
-
+paquetes="g++ gcc-4.3 g++-4.3 libx11-dev libxmu-dev x11proto-core-dev xorg-dev xgraph unrar build-essential autoconf automake libc6 libotcl1 tk8.4 gnuplot libtool tk8.4-dev tcl8.4-dev"
 # Variable: checkuser
 #
 # Si su valor es 0 se hara seleccion de usuario si no se supondra que ya se ha elegida
@@ -115,75 +105,33 @@ instalar(){
 	sleep 3
 	mkdir /home/$user/simulador/
 	cd /home/$user/simulador/
-	wget http://sourceforge.net/projects/nsnam/files/allinone/ns-allinone-2.34/ns-allinone-2.34.tar.gz
+	rm -R ns-allinone-2.34/
+	#wget http://sourceforge.net/projects/nsnam/files/allinone/ns-allinone-2.34/ns-allinone-2.34.tar.gz
 	#descomprimir el archivo en un directorio
 	tar -xzvf ns-allinone-2.34.tar.gz
 	
 	#buscando de SHLIB_LD="ld -shared" a SHLIB_LD="gcc -shared"
 	cd /home/$user/simulador/ns-allinone-2.34/otcl-1.13/
 	find /home/$user/simulador/ns-allinone-2.34/otcl-1.13/configure | xargs perl -pi -e 's/SHLIB_LD="ld -shared"/SHLIB_LD="gcc -shared"/g'
-	echo "cambio variable"
-	sleep 3
 	find /home/$user/simulador/ns-allinone-2.34/nam-1.14/Makefile.in | xargs perl -pi -e 's/CC=@CC@/CC=gcc-4.3/g'
-	echo "cambio variable"
-	sleep 3
 	find /home/$user/simulador/ns-allinone-2.34/ns-2.34/Makefile.in | xargs perl -pi -e 's/CC=@CC@/CC=gcc-4.3/g'
-	echo "cambio variable"
-	sleep 3
 	find /home/$user/simulador/ns-allinone-2.34/otcl-1.13/Makefile.in | xargs perl -pi -e 's/CC=@CC@/CC=gcc-4.3/g'
-	echo "cambio variable"
-	sleep 3
 	find /home/$user/simulador/ns-allinone-2.34/tclcl-1.19/Makefile.in | xargs perl -pi -e 's/CC=@CC@/CC=gcc-4.3/g'
-	echo "cambio variable"
-	sleep 3
 	find /home/$user/simulador/ns-allinone-2.34/nam-1.14/Makefile.in | xargs perl -pi -e 's/CPP=@CXX@/CPP=g++-4.3/g'
-	echo "cambio variable"
-	sleep 3
 	find /home/$user/simulador/ns-allinone-2.34/ns-2.34/Makefile.in | xargs perl -pi -e 's/CPP=@CXX@/CPP=g++-4.3/g'
-	echo "cambio variable"
-	sleep 3
 	find /home/$user/simulador/ns-allinone-2.34/otcl-1.13/Makefile.in | xargs perl -pi -e 's/CPP=@CXX@/CPP=g++-4.3/g'
-	echo "cambio variable"
-	sleep 3
 	find /home/$user/simulador/ns-allinone-2.34/tclcl-1.19/Makefile.in | xargs perl -pi -e 's/CPP=@CXX@/CPP=g++-4.3/g'
-	echo "cambio variable"
-	sleep 3
 	
-	#instalar el paquete
-	cd /home/$user/simulador/ns-allinone-2.34
-	./install 
-	echo "instalacion de ns terminada..........."
-	sleep 5
-
-	echo PATH=$PATH:/home/$user/simulador/ns-allinone-2.34/ns-2.34 >> /etc/bash_completion
-	echo export NS=/home/$user/simulador/ns-allinone-2.34/ns-2.34  >> /etc/bash_completion
-	echo export TCPLAB=/home/$user/simulador/tcp-lab/trunk/includes/tcl >> /etc/bash_completion
-	echo export TCPLABRPI=/home/$user/simulador/tcp-lab/trunk/rpi/rpi-tcl >> /etc/bash_completion
-	echo export NSVER=2.34 >> /etc/bash_completion
-	
-	source /etc/bash_completion
-	test_command $? "Problemas al instalar los paquetes NS 2."
-	
-###########################TCPLAB#######################
-
-echo "desea continuar con la instalacion de TCPLAB  (y/n)"
-read s
-
-if [ $s = 'y'  ]; then 
 	echo "Empieza instalacion de TCPLAB"
-	sleep 5
 	#mv tcp-lab /home/$user/simulador/
 	cd /home/$user/simulador/
 	#COPIAR ARCHIVOS/DIRECTORIOS
 	cp -R tcp-lab/trunk/rpi ns-allinone-2.34/ns-2.34/rpi
-	sleep 5
 	cp -R tcp-lab/trunk/rpi/rpi-tcl ns-allinone-2.34/ns-2.34/tcl/rpi
-	sleep 5
 	cp -R ns-allinone-2.34/ns-2.34/rpi/rpi-c++/* ns-allinone-2.34/ns-2.34/rpi
 	
 	#RESPALDO de archivos originales
 	cd /home/$user/simulador/ns-allinone-2.34/ns-2.34/tcp
-	sleep 5
 	mv tcp.cc tcp.cc-backup
 	mv tcp.h tcp.h-backup
 	mv tcp-full.cc tcp-full.cc-backup
@@ -212,26 +160,23 @@ if [ $s = 'y'  ]; then
 	cd /home/$user/simulador/ns-allinone-2.34/ns-2.34/
 	mv Makefile.in Makefile.in-backup
 	cd /home/$user/simulador/tcp-lab/
-	mv Makefile.in /home/$user/simulador/ns-allinone-2.34/ns-2.34/
+	cp	 Makefile.in /home/$user/simulador/ns-allinone-2.34/ns-2.34/
 	
+	#instalar el paquete
+	cd /home/$user/simulador/ns-allinone-2.34
+	./install 
+	echo "instalacion de ns terminada..........."
 
-	#RECONSTRUIR el TCLCL
-	cd /home/$user/simulador/ns-allinone-2.34/tclcl-1.19
-	./configure --disable-static CC=gcc-4.3 CXX=g++-4.3
-	make install
+	echo PATH=$PATH:/home/$user/simulador/ns-allinone-2.34/ns-2.34 >> ~/.bashrc
+	echo export NS=/home/$user/simulador/ns-allinone-2.34/ns-2.34  >> ~/.bashrc
+	echo export TCPLAB=/home/$user/simulador/tcp-lab/trunk/includes/tcl >> ~/.bashrc
+	echo export TCPLABRPI=/home/$user/simulador/tcp-lab/trunk/rpi/rpi-tcl >> ~/.bashrc
+	echo export NSVER=2.34 >> ~/.bashrc
 	
-	#RECONSTRUIR el NS2.34
-	cd /home/$user/simulador/ns-allinone-2.34/ns-2.34
-	./configure --disable-static CC=gcc-4.3 CXX=g++-4.3
-	make install
-	
-	test_command $? "Problemas al instalar los paquetes TCPLAB."
+	source ~/.bashrc
+	test_command $? "Problemas al instalar los paquetes NS 2."
 	echo "---------- Se han instalado los paquetes NS 2 y TCPLAB----------"
-else
-	echo "FIn de la instalación de NS2"
-fi
-	
-	
+
 }
 
 # Function: ayuda
